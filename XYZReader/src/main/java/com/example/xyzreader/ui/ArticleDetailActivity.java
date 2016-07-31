@@ -3,12 +3,15 @@ package com.example.xyzreader.ui;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.LoaderManager;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -49,6 +52,17 @@ public class ArticleDetailActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.share_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
+                        .setType("text/plain")
+                        .setText("Some sample text")
+                        .getIntent(), getString(R.string.action_share)));
+            }
+        });
 
         getLoaderManager().initLoader(0, null, this);
 
