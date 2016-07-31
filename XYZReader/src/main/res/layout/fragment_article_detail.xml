@@ -11,7 +11,7 @@
         android:background="@color/photo_placeholder">
 
         <android.support.design.widget.CollapsingToolbarLayout
-            android:id="@+id/photo_container"
+            android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:contentScrim="?attr/colorPrimary"

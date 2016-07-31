@@ -5,7 +5,6 @@ import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -44,7 +43,7 @@ public class ArticleDetailFragment extends Fragment implements
     private ColorDrawable mStatusBarColorDrawable;
 
     private int mTopInset;
-    private CollapsingToolbarLayout mPhotoContainerView;
+    private CollapsingToolbarLayout mCollapsingToolbarView;
     private ImageView mPhotoView;
     private int mScrollY;
     private boolean mIsCard = false;
@@ -97,7 +96,7 @@ public class ArticleDetailFragment extends Fragment implements
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
-        mPhotoContainerView = (CollapsingToolbarLayout) mRootView.findViewById(R.id.photo_container);
+        mCollapsingToolbarView = (CollapsingToolbarLayout) mRootView.findViewById(R.id.collapsing_toolbar);
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
@@ -114,7 +113,6 @@ public class ArticleDetailFragment extends Fragment implements
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
@@ -141,8 +139,8 @@ public class ArticleDetailFragment extends Fragment implements
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
                                 mRootView.findViewById(R.id.meta_bar)
                                         .setBackgroundColor(mMutedColor);
-                                mPhotoContainerView.setContentScrimColor(mMutedColor);
-                                mPhotoContainerView.setStatusBarScrimColor(mMutedColor);
+                                mCollapsingToolbarView.setContentScrimColor(mMutedColor);
+                                mCollapsingToolbarView.setStatusBarScrimColor(mMutedColor);
                             }
                         }
 
