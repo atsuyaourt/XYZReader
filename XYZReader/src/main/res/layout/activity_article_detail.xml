@@ -12,12 +12,7 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"/>
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <include layout="@layout/toolbar"></include>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/share_fab"

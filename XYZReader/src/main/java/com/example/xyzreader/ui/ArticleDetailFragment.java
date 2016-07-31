@@ -5,6 +5,7 @@ import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -134,13 +135,21 @@ public class ArticleDetailFragment extends Fragment implements
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
                             if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
-                                mCollapsingToolbarView.setContentScrimColor(mMutedColor);
-                                mCollapsingToolbarView.setStatusBarScrimColor(mMutedColor);
+                                if (!mRootView.getResources().getBoolean(R.bool.is_landscape)) {
+                                    Palette p = Palette.generate(bitmap, 12);
+                                    mMutedColor = p.getDarkMutedColor(0xFF333333);
+                                    mRootView.findViewById(R.id.meta_bar)
+                                            .setBackgroundColor(mMutedColor);
+                                    if(mCollapsingToolbarView != null) {
+                                        mCollapsingToolbarView.setContentScrimColor(mMutedColor);
+                                        mCollapsingToolbarView.setStatusBarScrimColor(mMutedColor);
+                                    }
+                                }
+                                else {
+                                    mRootView.findViewById(R.id.meta_bar).setBackgroundColor(Color.TRANSPARENT);
+                                }
+
                             }
                         }
 
@@ -149,11 +158,6 @@ public class ArticleDetailFragment extends Fragment implements
 
                         }
                     });
-        } else {
-            //mRootView.setVisibility(View.GONE);
-            titleView.setText("");
-            bylineView.setText("");
-            bodyView.setText("");
         }
     }
 

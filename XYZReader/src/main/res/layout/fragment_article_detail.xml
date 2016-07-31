@@ -39,37 +39,7 @@
 
         </android.support.design.widget.CollapsingToolbarLayout>
 
-        <LinearLayout
-            android:id="@+id/meta_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:layout_gravity="bottom"
-            android:orientation="vertical"
-            android:paddingLeft="@dimen/detail_inner_horiz_margin"
-            android:paddingRight="@dimen/detail_inner_horiz_margin"
-            android:paddingTop="@dimen/detail_metabar_vert_padding"
-            android:paddingBottom="@dimen/detail_metabar_vert_padding">
-
-            <TextView
-                android:id="@+id/article_title"
-                style="@style/TextAppearance.AppCompat.Display1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-condensed"
-                android:lineSpacingMultiplier="0.9"
-                tools:text="Header"
-                android:textColor="@color/primary_text_default_material_dark"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/article_byline"
-                style="@style/TextAppearance.AppCompat.Body1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="Subtitle"
-                android:textColor="@color/secondary_text_default_material_dark" />
-        </LinearLayout>
+        <include layout="@layout/article_header"/>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -79,27 +49,8 @@
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <com.example.xyzreader.ui.MaxWidthLinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:maxWidth="@dimen/detail_card_max_width"
-            android:background="#fff" >
+        <include layout="@layout/article_body"/>
 
-            <TextView
-                android:id="@+id/article_body"
-                style="@style/TextAppearance.AppCompat.Subhead"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/detail_inner_horiz_margin"
-                android:layout_marginRight="@dimen/detail_inner_horiz_margin"
-                android:paddingTop="@dimen/detail_body_top_margin"
-                android:paddingBottom="@dimen/detail_body_bottom_margin"
-                android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
-                android:textColor="@color/theme_secondary_text" />
-
-        </com.example.xyzreader.ui.MaxWidthLinearLayout>
     </android.support.v4.widget.NestedScrollView>
 
 </android.support.design.widget.CoordinatorLayout>
