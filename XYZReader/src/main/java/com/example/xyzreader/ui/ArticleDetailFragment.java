@@ -6,9 +6,10 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
 import android.text.format.DateUtils;
@@ -37,15 +38,22 @@ public class ArticleDetailFragment extends Fragment implements
     public static final String ARG_ITEM_ID = "item_id";
     private static final float PARALLAX_FACTOR = 1.25f;
 
+    int mColorPrimary;
+    int mColorPrimaryDark;
+
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-    private int mMutedColor = 0xFF333333;
-    private ColorDrawable mStatusBarColorDrawable;
 
-    private CollapsingToolbarLayout mCollapsingToolbarView;
-    private ImageView mPhotoView;
-    private boolean mIsCard = false;
+    CollapsingToolbarLayout mCollapsingToolbarView;
+    ImageView mPhotoView;
+    TextView mTitleView;
+    TextView mByLineView;
+    TextView mBodyView;
+    View mMetaBar;
+
+    boolean mIsCard = false;
+    boolean mIsLandscape = false;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -70,7 +78,12 @@ public class ArticleDetailFragment extends Fragment implements
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
 
+        mColorPrimary = ContextCompat.getColor(getActivity(), R.color.theme_primary);
+        mColorPrimaryDark = ContextCompat.getColor(getActivity(), R.color.theme_primary_dark);
+
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
+        mIsLandscape = getResources().getBoolean(R.bool.is_landscape);
+
         setHasOptionsMenu(true);
     }
 
@@ -94,10 +107,13 @@ public class ArticleDetailFragment extends Fragment implements
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
-        mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
         mCollapsingToolbarView = (CollapsingToolbarLayout) mRootView.findViewById(R.id.collapsing_toolbar);
+        mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
+        mTitleView = (TextView) mRootView.findViewById(R.id.article_title);
+        mByLineView = (TextView) mRootView.findViewById(R.id.article_byline);
+        mBodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
-        mStatusBarColorDrawable = new ColorDrawable(0);
+        mMetaBar = mRootView.findViewById(R.id.meta_bar);
 
         bindViews();
         return mRootView;
@@ -108,17 +124,14 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
-        bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+        mByLineView.setMovementMethod(new LinkMovementMethod());
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            bylineView.setText(Html.fromHtml(
+            mTitleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            mByLineView.setText(Html.fromHtml(
                     DateUtils.getRelativeTimeSpanString(
                             mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
                             System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
@@ -126,28 +139,32 @@ public class ArticleDetailFragment extends Fragment implements
                             + " by <font color='#ffffff'>"
                             + mCursor.getString(ArticleLoader.Query.AUTHOR)
                             + "</font>"));
-            bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
+            mBodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && getActivity() != null) {
+                getActivity().getWindow().setStatusBarColor(mColorPrimaryDark);
+            }
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
+                            int darkMutedColor = mColorPrimaryDark;
+                            int mutedColor;
                             if (bitmap != null) {
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                if (!mRootView.getResources().getBoolean(R.bool.is_landscape)) {
+                                if (!mIsLandscape) {
                                     Palette p = Palette.generate(bitmap, 12);
-                                    mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                    mRootView.findViewById(R.id.meta_bar)
-                                            .setBackgroundColor(mMutedColor);
-                                    if(mCollapsingToolbarView != null) {
-                                        mCollapsingToolbarView.setContentScrimColor(mMutedColor);
-                                        mCollapsingToolbarView.setStatusBarScrimColor(mMutedColor);
-                                    }
+                                    mutedColor = p.getMutedColor(mColorPrimary);
+                                    darkMutedColor = p.getDarkMutedColor(mColorPrimaryDark);
+                                    mMetaBar.setBackgroundColor(mutedColor);
+                                    mCollapsingToolbarView.setContentScrimColor(mutedColor);
                                 }
                                 else {
-                                    mRootView.findViewById(R.id.meta_bar).setBackgroundColor(Color.TRANSPARENT);
+                                    mMetaBar.setBackgroundColor(Color.TRANSPARENT);
                                 }
-
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && getActivity() != null) {
+                                    getActivity().getWindow().setStatusBarColor(darkMutedColor);
+                                }
                             }
                         }
 
