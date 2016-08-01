@@ -43,10 +43,8 @@ public class ArticleDetailFragment extends Fragment implements
     private int mMutedColor = 0xFF333333;
     private ColorDrawable mStatusBarColorDrawable;
 
-    private int mTopInset;
     private CollapsingToolbarLayout mCollapsingToolbarView;
     private ImageView mPhotoView;
-    private int mScrollY;
     private boolean mIsCard = false;
 
     /**

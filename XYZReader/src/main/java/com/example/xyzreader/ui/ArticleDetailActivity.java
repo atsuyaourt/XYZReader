@@ -17,11 +17,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.data.ItemsContract;
 
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
@@ -29,11 +27,7 @@ import com.example.xyzreader.data.ItemsContract;
 public class ArticleDetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private Cursor mCursor;
-    private long mStartId;
-
-    private long mSelectedItemId;
-    private int mTopInset;
+    private int mStartId;
 
     private ViewPager mPager;
     private ArticlePagerAdapter mPagerAdapter;
@@ -66,36 +60,17 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         getLoaderManager().initLoader(0, null, this);
 
-        mPagerAdapter = new ArticlePagerAdapter(getFragmentManager());
+        mPagerAdapter = new ArticlePagerAdapter(getFragmentManager(), null);
         mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageMargin((int) TypedValue
                 .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
-        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                if (mCursor != null) {
-                    mCursor.moveToPosition(position);
-                }
-                mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
-            }
-        });
 
         if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().getData() != null) {
-                mStartId = ItemsContract.Items.getItemId(getIntent().getData());
-                mSelectedItemId = mStartId;
+            mStartId = 0;
+            if (getIntent() != null) {
+                mStartId = getIntent().getIntExtra(ArticleListActivity.POSITION_KEY, 0);
             }
         }
     }
@@ -107,40 +82,21 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        mCursor = cursor;
-        mPagerAdapter.notifyDataSetChanged();
-
-        // Select the start ID
-        if (mStartId > 0) {
-            mCursor.moveToFirst();
-            // TODO: optimize
-            while (!mCursor.isAfterLast()) {
-                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
-                    final int position = mCursor.getPosition();
-                    mPager.setCurrentItem(position, false);
-                    break;
-                }
-                mCursor.moveToNext();
-            }
-            mStartId = 0;
-        }
+        mPagerAdapter.swapCursor(cursor);
+        mPager.setCurrentItem(mStartId, false);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        mCursor = null;
-        mPagerAdapter.notifyDataSetChanged();
+        mPagerAdapter.swapCursor(null);
     }
 
     private class ArticlePagerAdapter extends FragmentStatePagerAdapter {
-        public ArticlePagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
+        Cursor mCursor;
 
-        @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            super.setPrimaryItem(container, position, object);
-            ArticleDetailFragment fragment = (ArticleDetailFragment) object;
+        public ArticlePagerAdapter(FragmentManager fm, Cursor cursor) {
+            super(fm);
+            mCursor = cursor;
         }
 
         @Override
@@ -152,6 +108,18 @@ public class ArticleDetailActivity extends AppCompatActivity
         @Override
         public int getCount() {
             return (mCursor != null) ? mCursor.getCount() : 0;
+        }
+
+        public void swapCursor(Cursor c) {
+            if (mCursor == c)
+                return;
+
+            mCursor = c;
+            notifyDataSetChanged();
+        }
+
+        public Cursor getCursor() {
+            return mCursor;
         }
     }
 }
