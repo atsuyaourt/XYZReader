@@ -9,7 +9,6 @@ import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.view.ViewPager;
@@ -23,6 +22,10 @@ import android.view.WindowManager;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
  */
@@ -31,7 +34,9 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     private int mStartId;
 
-    private ViewPager mPager;
+    @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.pager) ViewPager mPager;
+
     private ArticlePagerAdapter mPagerAdapter;
 
     @Override
@@ -47,26 +52,15 @@ public class ArticleDetailActivity extends AppCompatActivity
         }
         setContentView(R.layout.activity_article_detail);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        ButterKnife.bind(this);
+
+        setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.share_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
-                        .setType("text/plain")
-                        .setText("Some sample text")
-                        .getIntent(), getString(R.string.action_share)));
-            }
-        });
 
         getLoaderManager().initLoader(0, null, this);
 
         mPagerAdapter = new ArticlePagerAdapter(getFragmentManager(), null);
-        mPager = (ViewPager) findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageMargin((int) TypedValue
                 .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
@@ -94,6 +88,14 @@ public class ArticleDetailActivity extends AppCompatActivity
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mPagerAdapter.swapCursor(null);
+    }
+
+    @OnClick(R.id.share_fab)
+    public void shareArticle(View view) {
+        startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(ArticleDetailActivity.this)
+                .setType("text/plain")
+                .setText("Some sample text")
+                .getIntent(), getString(R.string.action_share)));
     }
 
     private class ArticlePagerAdapter extends FragmentStatePagerAdapter {

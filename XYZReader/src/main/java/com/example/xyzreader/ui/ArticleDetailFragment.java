@@ -8,8 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
 import android.text.format.DateUtils;
@@ -26,6 +26,12 @@ import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
+import butterknife.BindBool;
+import butterknife.BindColor;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
+
 /**
  * A fragment representing a single Article detail screen. This fragment is
  * either contained in a {@link ArticleListActivity} in two-pane mode (on
@@ -36,24 +42,26 @@ public class ArticleDetailFragment extends Fragment implements
     private static final String TAG = "ArticleDetailFragment";
 
     public static final String ARG_ITEM_ID = "item_id";
-    private static final float PARALLAX_FACTOR = 1.25f;
-
-    int mColorPrimary;
-    int mColorPrimaryDark;
 
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
 
-    CollapsingToolbarLayout mCollapsingToolbarView;
-    ImageView mPhotoView;
-    TextView mTitleView;
-    TextView mByLineView;
-    TextView mBodyView;
-    View mMetaBar;
+    @Nullable
+    @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbarView;
+    @BindView(R.id.photo) ImageView mPhotoView;
+    @BindView(R.id.article_title) TextView mTitleView;
+    @BindView(R.id.article_byline) TextView mByLineView;
+    @BindView(R.id.article_body) TextView mBodyView;
+    @BindView(R.id.meta_bar) View mMetaBar;
 
-    boolean mIsCard = false;
-    boolean mIsLandscape = false;
+    @BindBool(R.bool.detail_is_card) boolean mIsCard;
+    @BindBool(R.bool.is_landscape) boolean mIsLandscape;
+
+    @BindColor(R.color.theme_primary) int mColorPrimary;
+    @BindColor(R.color.theme_primary_dark) int mColorPrimaryDark;
+
+    private Unbinder mUnbinder;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -78,12 +86,6 @@ public class ArticleDetailFragment extends Fragment implements
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
 
-        mColorPrimary = ContextCompat.getColor(getActivity(), R.color.theme_primary);
-        mColorPrimaryDark = ContextCompat.getColor(getActivity(), R.color.theme_primary_dark);
-
-        mIsCard = getResources().getBoolean(R.bool.detail_is_card);
-        mIsLandscape = getResources().getBoolean(R.bool.is_landscape);
-
         setHasOptionsMenu(true);
     }
 
@@ -106,23 +108,22 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-
-        mCollapsingToolbarView = (CollapsingToolbarLayout) mRootView.findViewById(R.id.collapsing_toolbar);
-        mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
-        mTitleView = (TextView) mRootView.findViewById(R.id.article_title);
-        mByLineView = (TextView) mRootView.findViewById(R.id.article_byline);
-        mBodyView = (TextView) mRootView.findViewById(R.id.article_body);
-
-        mMetaBar = mRootView.findViewById(R.id.meta_bar);
-
         bindViews();
         return mRootView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mUnbinder.unbind();
     }
 
     private void bindViews() {
         if (mRootView == null) {
             return;
         }
+
+        mUnbinder = ButterKnife.bind(this, mRootView);
 
         mByLineView.setMovementMethod(new LinkMovementMethod());
 
