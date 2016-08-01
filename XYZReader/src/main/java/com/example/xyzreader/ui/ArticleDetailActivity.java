@@ -44,7 +44,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
-            getWindow().getDecorView().setSystemUiVisibility(
+            window.getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -60,7 +60,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
         getLoaderManager().initLoader(0, null, this);
 
-        mPagerAdapter = new ArticlePagerAdapter(getFragmentManager(), null);
+        mPagerAdapter = new ArticlePagerAdapter(getFragmentManager());
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageMargin((int) TypedValue
                 .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
@@ -101,9 +101,15 @@ public class ArticleDetailActivity extends AppCompatActivity
     private class ArticlePagerAdapter extends FragmentStatePagerAdapter {
         Cursor mCursor;
 
+        public ArticlePagerAdapter(FragmentManager fm) {
+            super(fm);
+            mCursor = null;
+        }
+
         public ArticlePagerAdapter(FragmentManager fm, Cursor cursor) {
             super(fm);
             mCursor = cursor;
+            notifyDataSetChanged();
         }
 
         @Override

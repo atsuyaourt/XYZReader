@@ -6,8 +6,10 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.graphics.Palette;
 import android.text.method.LinkMovementMethod;
@@ -45,7 +47,9 @@ public class ArticleDetailFragment extends Fragment implements
     private View mRootView;
 
     @Nullable
-    @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbarView;
+    @BindView(R.id.appbar) AppBarLayout mAppBar;
+    @Nullable
+    @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbar;
     @BindView(R.id.photo) ImageView mPhotoView;
     @BindView(R.id.article_title) TextView mTitleView;
     @BindView(R.id.article_byline) TextView mByLineView;
@@ -133,6 +137,8 @@ public class ArticleDetailFragment extends Fragment implements
                     mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
                     mCursor.getString(ArticleLoader.Query.AUTHOR)));
             mBodyView.setText(Utils.formatArticleBody(mCursor.getString(ArticleLoader.Query.BODY)));
+            if (mAppBar != null)
+                mAppBar.setExpanded(false, false);
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
@@ -142,7 +148,7 @@ public class ArticleDetailFragment extends Fragment implements
 
                         @Override
                         public void onErrorResponse(VolleyError volleyError) {
-
+                            updateImage(null);
                         }
                     });
         }
@@ -178,19 +184,30 @@ public class ArticleDetailFragment extends Fragment implements
         bindViews();
     }
 
-    private void updateImage(Bitmap bitmap) {
-        int mutedColor;
-        if (bitmap != null) {
+    public void updateImage(Bitmap bitmap) {
+        if (bitmap != null && mPhotoView != null) {
+            if (mAppBar != null)
+                mAppBar.setExpanded(true, false);
             mPhotoView.setImageBitmap(bitmap);
-            if (!mIsLandscape) {
-                Palette.Builder builder = Palette.from(bitmap);
-                Palette p = builder.generate();
-                mutedColor = p.getMutedColor(mColorPrimary);
-                mMetaBar.setBackgroundColor(mutedColor);
-                mCollapsingToolbarView.setContentScrimColor(mutedColor);
-            } else {
+            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(Palette palette) {
+                    if (!mIsLandscape) {
+                        int mutedColor = palette.getMutedColor(mColorPrimary);
+                        mMetaBar.setBackgroundColor(mutedColor);
+                        mCollapsingToolbar.setContentScrimColor(mutedColor);
+
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && getActivity() != null) {
+                        getActivity().getWindow().setStatusBarColor(palette.getDarkMutedColor(mColorPrimary));
+                    }
+                }
+            });
+            if (mIsLandscape) {
                 mMetaBar.setBackgroundColor(Color.TRANSPARENT);
             }
         }
+
     }
+
 }
