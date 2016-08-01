@@ -6,13 +6,10 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.graphics.Palette;
-import android.text.Html;
-import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -106,7 +103,7 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         bindViews();
         return mRootView;
@@ -132,41 +129,15 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             mTitleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            mByLineView.setText(Html.fromHtml(
-                    DateUtils.getRelativeTimeSpanString(
-                            mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
-                            System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                            DateUtils.FORMAT_ABBREV_ALL).toString()
-                            + " by <font color='#ffffff'>"
-                            + mCursor.getString(ArticleLoader.Query.AUTHOR)
-                            + "</font>"));
-            mBodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && getActivity() != null) {
-                getActivity().getWindow().setStatusBarColor(mColorPrimaryDark);
-            }
+            mByLineView.setText(Utils.formatArticleByLine(
+                    mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
+                    mCursor.getString(ArticleLoader.Query.AUTHOR)));
+            mBodyView.setText(Utils.formatArticleBody(mCursor.getString(ArticleLoader.Query.BODY)));
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            int darkMutedColor = mColorPrimaryDark;
-                            int mutedColor;
-                            if (bitmap != null) {
-                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                if (!mIsLandscape) {
-                                    Palette p = Palette.generate(bitmap, 12);
-                                    mutedColor = p.getMutedColor(mColorPrimary);
-                                    darkMutedColor = p.getDarkMutedColor(mColorPrimaryDark);
-                                    mMetaBar.setBackgroundColor(mutedColor);
-                                    mCollapsingToolbarView.setContentScrimColor(mutedColor);
-                                }
-                                else {
-                                    mMetaBar.setBackgroundColor(Color.TRANSPARENT);
-                                }
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && getActivity() != null) {
-                                    getActivity().getWindow().setStatusBarColor(darkMutedColor);
-                                }
-                            }
+                            updateImage(imageContainer.getBitmap());
                         }
 
                         @Override
@@ -205,5 +176,21 @@ public class ArticleDetailFragment extends Fragment implements
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mCursor = null;
         bindViews();
+    }
+
+    private void updateImage(Bitmap bitmap) {
+        int mutedColor;
+        if (bitmap != null) {
+            mPhotoView.setImageBitmap(bitmap);
+            if (!mIsLandscape) {
+                Palette.Builder builder = Palette.from(bitmap);
+                Palette p = builder.generate();
+                mutedColor = p.getMutedColor(mColorPrimary);
+                mMetaBar.setBackgroundColor(mutedColor);
+                mCollapsingToolbarView.setContentScrimColor(mutedColor);
+            } else {
+                mMetaBar.setBackgroundColor(Color.TRANSPARENT);
+            }
+        }
     }
 }
